@@ -39,6 +39,7 @@ contract DNCCEngine is ReentrancyGuard {
     error MintFailed();
     error HealthFactorOK();
     error HealthFactorNotImproved();
+    error InvalidPrice();
 
     /////////////////////
     // State Variables //
@@ -316,6 +317,7 @@ contract DNCCEngine is ReentrancyGuard {
     function getUsdValue(address token, uint256 amount) public view returns (uint256) {
         AggregatorV3Interface priceFeed = AggregatorV3Interface(s_priceFeeds[token]);
         (, int256 price,,,) = priceFeed.latestRoundData();
+        require(price > 0, InvalidPrice());
         // 1 ETH = $1000
         // The returned value from the CL will be 1000 * 1e8
         return ((uint256(price) * ADDITIONAL_FEED_PRECISION) * amount) / PRECISION;
@@ -327,5 +329,25 @@ contract DNCCEngine is ReentrancyGuard {
         returns (uint256 totalDnccMinted, uint256 collateralValueInUsd)
     {
         (totalDnccMinted, collateralValueInUsd) = _getAccountInformation(user);
+    }
+
+    function getCollateralTokens() external view returns (address[] memory) {
+        return s_collateralTokens;
+    }
+
+    function getCollateralBalanceOfUser(address user, address token) external view returns (uint256) {
+        return s_collateralDeposited[user][token];
+    }
+
+    function getPrecision() external pure returns (uint256) {
+        return PRECISION;
+    }
+
+    function getLiquidationBonus() external pure returns (uint256) {
+        return LIQUIDATION_BONUS;
+    }
+
+    function getCollateralTokenPriceFeed(address token) external view returns (address) {
+        return s_priceFeeds[token];
     }
 }
