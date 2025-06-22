@@ -37,7 +37,6 @@ contract Invariants is StdInvariant, Test {
 
         handler = new Handler(dnccEngine, dncc);
         targetContract(address(handler));
-        // targetContract(address(dnccEngine));
     }
 
     function invariant_protocolMustHaveMoreValueThanTotalSupply() public view {

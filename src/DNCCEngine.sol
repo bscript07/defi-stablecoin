@@ -8,6 +8,7 @@ import {DenaroChainCoin} from "./DenaroChainCoin.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
+import {OracleLib} from "../src/libraries/OracleLib.sol";
 
 /**
  * @title DNCCEngine
@@ -40,6 +41,11 @@ contract DNCCEngine is ReentrancyGuard {
     error HealthFactorOK();
     error HealthFactorNotImproved();
     error InvalidPrice();
+
+    ///////////////
+    // Types //////
+    ///////////////
+    using OracleLib for AggregatorV3Interface;
 
     /////////////////////
     // State Variables //
@@ -297,7 +303,8 @@ contract DNCCEngine is ReentrancyGuard {
     function getTokenAmountFromUsd(address token, uint256 usdAmountInWei) public view returns (uint256) {
         // price of ETH (token)
         AggregatorV3Interface priceFeed = AggregatorV3Interface(s_priceFeeds[token]);
-        (, int256 price,,,) = priceFeed.latestRoundData();
+
+        (, int256 price,,,) = priceFeed.stalePriceCheckLatestRoundData();
         // ($10e18 * 1e18) / ($2000e8 * 1e10)
         return (usdAmountInWei * PRECISION) / (uint256(price) * ADDITIONAL_FEED_PRECISION);
     }

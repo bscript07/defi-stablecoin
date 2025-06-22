@@ -24,11 +24,11 @@ contract DeployDNCC is Script {
 
         vm.startBroadcast();
         DenaroChainCoin dncc = new DenaroChainCoin();
-        DNCCEngine engine = new DNCCEngine(tokenAddresses, priceFeedAddresses, address(dncc));
+        DNCCEngine dnccEngine = new DNCCEngine(tokenAddresses, priceFeedAddresses, address(dncc));
 
-        dncc.transferOwnership(address(engine));
+        dncc.transferOwnership(address(dnccEngine));
         vm.stopBroadcast();
 
-        return (dncc, engine, config);
+        return (dncc, dnccEngine, config);
     }
 }

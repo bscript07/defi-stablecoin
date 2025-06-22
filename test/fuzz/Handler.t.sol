@@ -31,7 +31,7 @@ contract Handler is Test {
         weth = ERC20Mock(collateralTokens[0]);
         wbtc = ERC20Mock(collateralTokens[1]);
 
-        dnccEngine.getCollateralTokenPriceFeed(address(weth));
+        ethUsdPriceFeed = MockV3Aggregator(dnccEngine.getCollateralTokenPriceFeed(address(weth)));
     }
 
     // redeem collateral <-
@@ -82,6 +82,12 @@ contract Handler is Test {
         vm.stopPrank();
         timesMintIsCalled++;
     }
+
+    // THis breaks our invariant test suite!!!
+    // function updateCollateralPriceFeed(uint96 newPrice) public {
+    //     int256 newPriceInt = int256(uint256(newPrice));
+    //     ethUsdPriceFeed.updateAnswer(newPriceInt);
+    // }
 
     // Helper Functions
     function _getCollateralFromSeed(uint256 collateralSeed) private view returns (ERC20Mock) {
