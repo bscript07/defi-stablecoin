@@ -5,7 +5,7 @@
 pragma solidity 0.8.30;
 
 import {DenaroChainCoin} from "./DenaroChainCoin.sol";
-import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
 import {OracleLib} from "../src/libraries/OracleLib.sol";
@@ -26,9 +26,9 @@ import {OracleLib} from "../src/libraries/OracleLib.sol";
  *
  * @notice This contract is core of the DNCC System. It handles all the logic for minting
  *  and redeeming DNCC, as well as depositing & withdrawing collateral.
- * @notice This contract is VERY loosely based on the MakerDAO DSS (DAI) system.
  */
-contract DNCCEngine is ReentrancyGuard {
+contract DNCCEngine is ReentrancyGuardUpgradeable {
+
     ///////////////
     // Errors //
     ///////////////
@@ -50,19 +50,22 @@ contract DNCCEngine is ReentrancyGuard {
     /////////////////////
     // State Variables //
     /////////////////////
-    uint256 private constant ADDITIONAL_FEED_PRECISION = 1e10;
-    uint256 private constant PRECISION = 1e18;
+    uint256 private constant ADDITIONAL_FEED_PRECISION = 1e10; // 10000000000
+    uint256 private constant PRECISION = 1e18; // 1000000000000000000 wei
     uint256 private constant LIQUIDATION_THRESHOLD = 50; // 200% overcollateralized
-    uint256 private constant LIQUIDATION_PRECISION = 100;
-    uint256 private constant MIN_HEALTH_FACTOR = 1e18;
-    uint256 private constant LIQUIDATION_BONUS = 10; // This means a 10% bonus
+    uint256 private constant LIQUIDATION_PRECISION = 100; // 100%
+    uint256 private constant MIN_HEALTH_FACTOR = 1e18; // 1 ether or (1000000000000000000 wei)
+    uint256 private constant LIQUIDATION_BONUS = 10; // 10% bonus
 
     mapping(address token => address priceFeed) private s_priceFeeds; // tokenToPriceFeed
+    // Store users collateral deposited amount
     mapping(address user => mapping(address token => uint256 amount)) private s_collateralDeposited;
+    // Store users minted amount
     mapping(address user => uint256 amountDnccMinted) private s_DNCCMinted;
+    // Store dynamic addresses with collateral tokens
     address[] private s_collateralTokens;
 
-    // Stablecoin
+    // Stablecoin Interface
     DenaroChainCoin private immutable i_dncc;
 
     ///////////////
